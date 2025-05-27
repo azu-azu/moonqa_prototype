@@ -1,0 +1,28 @@
+[tool.poetry]
+name = "moonbase-qa"
+version = "0.1.0"
+description = "A small RAG-based QA bot using LangChain and FAISS"
+authors = ["azu"]
+license = "MIT"
+
+packages = [
+  { include = "app" }
+]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+langchain = "^0.3.25"
+openai = "^1.82.0"
+faiss-cpu = "^1.11.0"
+python-dotenv = "^1.1.0"
+langchain-community = "^0.3.24"
+pypdf = "^5.5.0"
+tiktoken = "^0.9.0"
+
+[tool.poetry.group.dev.dependencies]
+black = "^24.4.0"
+isort = "^5.13.2"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
