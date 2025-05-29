@@ -3,8 +3,7 @@
 import os
 import json
 from langchain_community.vectorstores import FAISS
-from langchain_community.embeddings import OpenAIEmbeddings
-from langchain.chat_models import ChatOpenAI
+from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 from langchain.schema.runnable import RunnableMap
 from langchain.prompts import ChatPromptTemplate
 from app.config import get_index_path
@@ -22,7 +21,8 @@ def load_vectorstore():
 
 def retrieve_relevant_docs(vectorstore, query):
     docs_and_scores = vectorstore.similarity_search_with_score(query, k=3)
-    filtered = [(doc, score) for doc, score in docs_and_scores if score >= SCORE_THRESHOLD]
+    # スコアが小さい（距離が近い）ものを残す
+    filtered = [(doc, score) for doc, score in docs_and_scores if score <= SCORE_THRESHOLD]
     return filtered
 
 def format_docs(docs):
@@ -60,3 +60,14 @@ def append_json_log(question, answer, docs_and_scores):
     os.makedirs("logs", exist_ok=True)
     with open("logs/qa_log.jsonl", "a", encoding="utf-8") as f:
         f.write(json.dumps(log_entry, ensure_ascii=False) + "\n")
+
+# 使用チャンク情報を Markdown形式で出力
+def print_chunk_info_markdown(docs_and_scores):
+    print("\n## 🔍 使用チャンク情報\n")
+    for i, (doc, score) in enumerate(docs_and_scores):
+        source = doc.metadata.get("source", "unknown")
+        print(f"### Chunk {i+1}")
+        print(f"- **Score**: {score:.4f}")
+        print(f"- **Source**: {source}")
+        print(f"```\n{doc.page_content.strip()[:500]}\n```")  # 長すぎる本文は500文字まで
+        print()

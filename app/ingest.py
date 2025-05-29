@@ -12,7 +12,7 @@ def ingest():
     documents = loader.load()
 
     # Split text
-    splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
+    splitter = RecursiveCharacterTextSplitter(chunk_size=300, chunk_overlap=30)
     chunks = splitter.split_documents(documents)
 
     # Embed and index
