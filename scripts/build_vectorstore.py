@@ -1,32 +1,49 @@
+# scripts/build_vectorstore.py
 # PDFからチャンクを作って、ベクトル化して、FAISSに保存する、「学習データのインデックスを作る専用スクリプト」
 
+import os
+import glob
 from langchain_community.document_loaders import PyPDFLoader
-from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
 from langchain_openai import OpenAIEmbeddings
-import os
+from langchain.text_splitter import RecursiveCharacterTextSplitter
 
-# 対象PDFファイル
-pdf_path = "data/about_moon.pdf"
+# データとインデックスの保存先
+DATA_DIR = "data"
+INDEX_DIR = "index/faiss_index"
 
-# 1. 読み込み
-loader = PyPDFLoader(pdf_path)
-pages = loader.load()
+def load_all_pdfs(data_dir):
+    all_docs = []
 
-# チャンクに "source" を付ける
-for i, page in enumerate(pages):
-    page.metadata["source"] = f"{os.path.basename(pdf_path)} (p.{i+1})"
+    # 複数のPDFファイルを読み込む
+    pdf_files = glob.glob(os.path.join(data_dir, "*.pdf"))
 
-# 2. 分割（チャンク設計を自由に調整可）
-splitter = RecursiveCharacterTextSplitter(chunk_size=300, chunk_overlap=30)
-docs = splitter.split_documents(pages)
+    for pdf_path in pdf_files:
+        loader = PyPDFLoader(pdf_path)
+        pages = loader.load()
 
-# 3. 埋め込み
-embedding = OpenAIEmbeddings()
-db = FAISS.from_documents(docs, embedding)
+        file_name = os.path.basename(pdf_path)
+        for i, page in enumerate(pages):
+            # ページ単位で source を設定（"about_moon.pdf (p.1)" など）
+            page.metadata["source"] = f"{file_name} (p.{i+1})"
 
-# 4. 保存（保存先は app/config.py の get_index_path() を参照する前提でもOK）
-os.makedirs("index", exist_ok=True)
-db.save_local("index/faiss_index")
+        all_docs.extend(pages)
 
-print("✅ FAISSインデックス保存完了！")
+    return all_docs
+
+def build_vectorstore(docs):
+    # チャンク設定は用途に応じて調整可能
+    text_splitter = RecursiveCharacterTextSplitter(chunk_size=300, chunk_overlap=30)
+    split_docs = text_splitter.split_documents(docs)
+
+    embeddings = OpenAIEmbeddings()
+    vectorstore = FAISS.from_documents(split_docs, embeddings)
+
+    os.makedirs(INDEX_DIR, exist_ok=True)
+    vectorstore.save_local(INDEX_DIR)
+
+if __name__ == "__main__":
+    print("📄 PDFを読み込んでインデックスを作成中...")
+    docs = load_all_pdfs(DATA_DIR)
+    build_vectorstore(docs)
+    print("✅ FAISSインデックス作成完了！")
