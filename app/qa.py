@@ -11,8 +11,18 @@ from app.settings import SCORE_THRESHOLD, OPENAI_MODEL
 
 # プロンプトテンプレート
 PROMPT_TEMPLATE = ChatPromptTemplate.from_messages([
-    ("system", "以下の情報に基づいて、質問に日本語で簡潔に答えてください。\n情報が不十分な場合は「検索スコアが低いため、十分な根拠が見つかりませんでした」と答えてください。"),
-    ("human", "{context}\n\n質問: {question}")
+    (
+        "system",
+        "あなたは、関西弁のやわらかい語り口で話すアシスタントです。\n"
+        "口調はフレンドリーで、優しく寄り添うように話してください。\n"
+        "文体は『です・ます調』は使わず、句点（。）で改行してください。\n"
+        "読点（、）では改行しないでください。\n"
+        "詩的すぎる表現は避け、ふんわりした関西弁で、リズムよく3〜7行でまとめてください。\n"
+    ),
+    (
+        "human",
+        "{context}\n\n質問: {question}"
+    )
 ])
 
 def load_vectorstore():
@@ -20,7 +30,7 @@ def load_vectorstore():
     return FAISS.load_local(get_index_path(), embedding, allow_dangerous_deserialization=True)
 
 def retrieve_relevant_docs(vectorstore, query):
-    docs_and_scores = vectorstore.similarity_search_with_score(query, k=3)
+    docs_and_scores = vectorstore.similarity_search_with_score(query, k=5)
     # スコアが小さい（距離が近い）ものを残す
     filtered = [(doc, score) for doc, score in docs_and_scores if score <= SCORE_THRESHOLD]
     return filtered
@@ -29,9 +39,15 @@ def format_docs(docs):
     return "\n\n".join(doc.page_content for doc in docs)
 
 def get_answer(question, vectorstore):
+    """
+    指定された質問に対して回答を返す軽量関数。
+    - sourceやチャンク内容の確認は含まれません。
+    - それらを確認したい場合は manual_vector_check.py を使用してください。
+    """
+
     docs_and_scores = retrieve_relevant_docs(vectorstore, question)
     if not docs_and_scores:
-        return "検索スコアが低いため、十分な根拠が見つかりませんでした。", []
+        return "データの中に、今回の答えはなかったみたいやわ。ごめんやで🌙", []
 
     docs = [doc for doc, _ in docs_and_scores]
     context = format_docs(docs)

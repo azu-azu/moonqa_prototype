@@ -1,10 +1,14 @@
-# tests/run_qa_test.py
+# tests/manual_qa_run_log.py
 
 from app.qa import load_vectorstore, get_answer, append_json_log
 
 if __name__ == "__main__":
     vectorstore = load_vectorstore()
-    question = "このPDFは何について書かれていますか？"
+    # question = "月って何？"
+    # question = "月の特徴は？"
+    # question = "月って、どうやってできたの？"
+    # question = "地球とはどんな関係にあるの？"
+    question = "なんか面白いこと教えて。"
     answer, docs_and_scores = get_answer(question, vectorstore)
 
     print("💬 質問:", question)
