@@ -1,10 +1,12 @@
-# tests/test_qa_search.py
-
+import json
+import pytest
 from langchain_community.vectorstores import FAISS
-from langchain_openai import OpenAIEmbeddings, ChatOpenAI
-from langchain.chains import RetrievalQA
+from langchain_openai import OpenAIEmbeddings
 
-def test_faiss_search():
+@pytest.mark.parametrize("query,target_pdf", [
+    (q["question"], q.get("target_pdf")) for q in json.load(open("data/questions.json", encoding="utf-8"))
+])
+def test_similarity_search_with_threshold(query, target_pdf):
     db = FAISS.load_local(
         folder_path="index/faiss_index",
         embeddings=OpenAIEmbeddings(),
@@ -13,20 +15,15 @@ def test_faiss_search():
     )
 
     retriever = db.as_retriever()
-    qa = RetrievalQA.from_chain_type(
-        llm=ChatOpenAI(),
-        retriever=retriever
-    )
+    if target_pdf:
+        retriever.search_kwargs["filter"] = {"source": target_pdf}
 
-    query = "月の構造について教えて"
-    result = qa.invoke({"query": query})
+    # ✅ スコア付き検索（RetrievalQAは使わない）
+    results = db.similarity_search_with_score(query, k=3)
 
-    print("🔍 Answer:", result["result"])
-    for i, doc in enumerate(result.get("source_documents", [])):
-        print(f"\n📄 Doc {i+1}:")
-        print("source:", doc.metadata.get("source"))
-        print("excerpt:", doc.page_content[:100])
+    # ✅ スコアしきい値（例：0.3未満は除外）
+    threshold = 0.3
+    filtered = [doc for doc, score in results if score >= threshold]
 
-# 👇 これが実行トリガーやで！
-if __name__ == "__main__":
-    test_faiss_search()
+    # ✅ テスト判定
+    assert len(filtered) > 0, f"No relevant documents for query: {query} (threshold={threshold})"

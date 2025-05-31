@@ -5,7 +5,6 @@ from langchain_community.vectorstores import FAISS
 from app.qa import get_answer, load_vectorstore
 
 # 質問内容（テスト切り替え用：必要に応じてコメントアウトで変更）
-# QUESTION = "このPDFは何について書かれていますか？"
 # QUESTION = "月って何？"
 # QUESTION = "月の特徴は？"
 # QUESTION = "月って、どうやってできたの？"

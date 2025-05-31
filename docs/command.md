@@ -8,8 +8,14 @@ python scripts/build_vectorstore.py
 ---
 
 # test
+## どのチャンクが使われたかを詳細確認する
 ```
 python tests/manual_vector_check.py
+```
+
+## pytest
+```
+poetry run pytest
 ```
 
 ---
