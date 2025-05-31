@@ -1,7 +1,6 @@
 # app/qa.py
 
 import os
-import json
 from langchain_community.vectorstores import FAISS
 from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 from langchain.schema.runnable import RunnableMap
@@ -9,7 +8,7 @@ from langchain.prompts import ChatPromptTemplate
 from app.config import get_index_path
 from app.settings import SCORE_THRESHOLD, OPENAI_MODEL
 
-# プロンプトテンプレート
+# プロンプトテンプレート（関西弁・句点改行スタイル）
 PROMPT_TEMPLATE = ChatPromptTemplate.from_messages([
     (
         "system",
@@ -26,17 +25,24 @@ PROMPT_TEMPLATE = ChatPromptTemplate.from_messages([
 ])
 
 def load_vectorstore():
+    """
+    FAISSベクトルストアをローカルから読み込む。
+    """
     embedding = OpenAIEmbeddings()
     return FAISS.load_local(get_index_path(), embedding, allow_dangerous_deserialization=True)
 
 def retrieve_relevant_docs(vectorstore, query, target_pdf=None):
     """
-    類似チャンクを取得する。target_pdf が指定されていれば、そのPDFだけを対象にする。
+    質問に対して類似チャンクを取得する。
+
+    - target_pdf が指定されていれば、そのPDFだけを対象にする（source に部分一致）
+    - SCORE_THRESHOLD 以下のチャンクのみ返す（距離が近いもの）
     """
     search_kwargs = {"k": 5}
     docs_and_scores = vectorstore.similarity_search_with_score(query, **search_kwargs)
 
-    # PDFファイル名が一致するチャンクだけに絞る（source に部分一致）
+    # 🔍 metadata["source"] は "about_sun.pdf (p.1)" のように含まれている。
+    # FAISS の filter は完全一致なので、ここでは部分一致でフィルタ。
     if target_pdf:
         docs_and_scores = [
             (doc, score) for doc, score in docs_and_scores
@@ -48,15 +54,20 @@ def retrieve_relevant_docs(vectorstore, query, target_pdf=None):
     return filtered
 
 def format_docs(docs):
+    """
+    チャンクを文字列として結合
+    """
     return "\n\n".join(doc.page_content for doc in docs)
 
 def get_answer(question, vectorstore, target_pdf=None):
     """
     指定された質問に対して回答を返す軽量関数。
+
     質問 → ドキュメント検索 → プロンプト → 回答生成
+
     - target_pdf を指定すると、そのPDFのみを検索対象にする。
-    - sourceやチャンク内容の確認は含まれません。
-    - それらを確認したい場合は manual_vector_check.py を使用してください。
+    - sourceやチャンク内容の確認は含まれない。
+    - それらを確認したい場合は manual_vector_check.py を使用。
     """
     docs_and_scores = retrieve_relevant_docs(vectorstore, question, target_pdf)
     if not docs_and_scores:
@@ -76,30 +87,4 @@ def get_answer(question, vectorstore, target_pdf=None):
 
     return full_answer, docs_and_scores
 
-def append_json_log(question, answer, docs_and_scores):
-    log_entry = {
-        "question": question,
-        "answer": answer,
-        "documents": [
-            {
-                "content": doc.page_content,
-                "score": float(score),
-                "source": doc.metadata.get("source", "unknown")
-            }
-            for doc, score in docs_and_scores
-        ]
-    }
-    os.makedirs("logs", exist_ok=True)
-    with open("logs/qa_log.jsonl", "a", encoding="utf-8") as f:
-        f.write(json.dumps(log_entry, ensure_ascii=False) + "\n")
 
-# 使用チャンク情報を Markdown形式で出力
-def print_chunk_info_markdown(docs_and_scores):
-    print("\n## 🔍 使用チャンク情報\n")
-    for i, (doc, score) in enumerate(docs_and_scores):
-        source = doc.metadata.get("source", "unknown")
-        print(f"### Chunk {i+1}")
-        print(f"- **Score**: {score:.4f}")
-        print(f"- **Source**: {source}")
-        print(f"```\n{doc.page_content.strip()[:500]}\n```") # 長すぎる本文は500文字まで
-        print()

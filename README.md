@@ -7,34 +7,55 @@ It uses vector search (FAISS) and OpenAI's language model to provide accurate, c
 
 ## 🌌 Project Overview
 
-- **Purpose**: Test the ability to convert a PDF into vector data and query it using a natural language interface
-- **PDF Input**: `data/about_moon.pdf`
+- **Purpose**: Convert internal PDFs into a searchable vector database and enable natural language Q&A
+- **Supported Input**: Any `.pdf` file placed inside the `data/` directory
 - **Architecture**:
-  - Text splitting with LangChain's `RecursiveCharacterTextSplitter`
-  - Embedding via `OpenAIEmbeddings`
-  - Vector store: FAISS
-  - LLM: `ChatOpenAI (gpt-3.5-turbo)`
-  - CLI-based query execution
+  - Text splitting via `RecursiveCharacterTextSplitter`
+  - Embedding with `OpenAIEmbeddings`
+  - Vector store: `FAISS`
+  - LLM: `ChatOpenAI` (GPT-3.5-turbo or GPT-4)
+  - Output: JSONL log (`logs/qa_log.jsonl`) and optional CLI output
+  - Responses are generated in a soft Kansai dialect with line breaks at periods
 
 ---
 
 ## 🗂 Directory Structure
 
 ```
-moonqa_prototype/
-├── app/                 # Core logic (ingest, QA)
-├── data/                # PDF source files
-├── index/faiss_index/   # Vector index files (.faiss / .pkl)
-├── logs/                # Markdown logs of questions and answers
-├── .gitignore
+moonbase_qa/
+├── app/                       # Core logic
+│   ├── qa.py                  # Answer generation logic
+│   ├── config.py              # Path handling
+│   ├── ingest.py              # PDF to chunk → embed → FAISS
+│   ├── settings.py            # Constants like model name and thresholds
+│   └── ...
+├── data/                      # PDF input folder
+│   ├── about_moon.pdf
+│   ├── about_sun.pdf
+│   └── ...
+├── index/faiss_index/         # Vector DB (auto-generated)
+│   ├── index.faiss
+│   └── index.pkl
+├── logs/
+│   └── qa_log.jsonl           # Log of question/answer pairs
+├── scripts/
+│   ├── build_vectorstore.py   # 📌 Must re-run when PDFs are added/changed
+│   ├── manual_run.py
+│   └── multi_run.py
+├── tests/                     # QA behavior inspection and test tools
+│   ├── manual_vector_check.py     # Detailed chunk/source check (target_pdf support)
+│   ├── manual_embedding_check.py  # Embedding/chunk inspection
+│   ├── manual_qa_run_log.py       # Quick output test with log
+│   └── test_qa_search.py          # pytest-compatible test
+├── main.py                    # CLI entry point
 ├── README.md
-├── pyproject.toml
-└── main.py              # Entry point
+├── .gitignore
+└── pyproject.toml
 ```
 
 ---
 
-## 🚀 How to Use
+## 🚀 Setup & Usage
 
 1. **Install dependencies** with Poetry:
 
@@ -44,21 +65,25 @@ moonqa_prototype/
 
 2. **Set your OpenAI API key** in `.env`:
 
-   ```
-   OPENAI_API_KEY=your-key-here
-   ```
-
-3. **Run ingestion** to process the PDF:
-
-   ```bash
-   poetry run python app/ingest.py
+   ```env
+   OPENAI_API_KEY=your-api-key
    ```
 
-4. **Ask a question via CLI**:
+3. **Add your PDFs** to the `data/` folder.
+
+4. **Build the vector index** (must re-run every time you add/remove PDFs):
 
    ```bash
-   poetry run python app/qa.py --question "月には水がありますか？"
+   poetry run python scripts/build_vectorstore.py
    ```
+
+5. **Run the QA system via CLI**:
+
+   ```bash
+   poetry run python main.py
+   ```
+
+   → This will prompt you for a question and return an answer.
 
 ---
 
@@ -80,9 +105,23 @@ Each question/answer pair is appended to `logs/qa_log.md` in the following Markd
 
 ## 📌 Notes
 
-- This is a **prototype**, not production-ready
-- LLM calls may incur OpenAI API costs
-- `.env` is ignored and should not be committed
+- When using `target_pdf`, only the matching PDF is searched by partial filename match
+- Kansai dialect output is line-broken at periods (`。`) but not at commas (`、`)
+- `logs/qa_log.jsonl` contains structured logs of questions and answers
+- To check which vector chunks were used, run:
+
+   ```bash
+   poetry run python tests/manual_vector_check.py
+   ```
+
+---
+
+## 🧪 Test Utilities
+
+- `manual_vector_check.py` → Verify chunk content and source per question
+- `manual_qa_run_log.py` → Basic CLI run + JSONL log
+- `manual_embedding_check.py` → Inspect chunk count, embedding shape
+- `test_qa_search.py` → Pytest-ready check
 
 ---
 
