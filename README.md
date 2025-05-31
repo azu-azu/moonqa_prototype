@@ -65,10 +65,11 @@ moonbase_qa/
    poetry install
    ```
 
-2. **Set your OpenAI API key** in `.env`:
+2. **Set your OpenAI API key and model** in `.env`:
 
    ```env
    OPENAI_API_KEY=your-api-key
+   OPENAI_MODEL=gpt-3.5-turbo
    ```
 
 3. **Add your PDFs** to the `data/` folder.
@@ -99,9 +100,16 @@ Each question/answer pair is appended to `logs/qa_log.md` in the following Markd
 
 ## 📖 Answer
 月の表面には「海」と呼ばれる平らな地形がありますが、実際には水は存在しません。
-
 ---
 ```
+
+---
+
+## 🔧 Configuration Notes
+
+- OpenAI API key and model settings should be defined in your `.env` file:
+- Thresholds and app-specific parameters are set in `app/settings.py`.
+For example, `SCORE_THRESHOLD` controls the similarity score cutoff used during retrieval (range: 0.0–1.0).
 
 ---
 
