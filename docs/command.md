@@ -25,6 +25,11 @@ poetry run pytest
 poetry run pytest tests/test_qa_search.py --log-output
 ```
 
+## id:q007 だけを試したいとき
+```
+pytest tests/test_qa_search.py --log-output -s -k q007
+```
+
 ---
 
 # ディレクトリ操作

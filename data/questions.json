@@ -1,9 +1,9 @@
 [
-    { "question": "月って何？", "target_pdf": "about_moon.pdf" },
-    { "question": "月って、どうやってできたの？", "target_pdf": "about_moon.pdf" },
-    { "question": "月と地球の関係は？", "target_pdf": "about_moon.pdf" },
-    { "question": "なんか面白いこと教えて。", "target_pdf": null },
-    { "question": "太陽はどうやって光ってるの？", "target_pdf": "about_sun.pdf" },
-    { "question": "太陽はずっとこのまま？", "target_pdf": "about_sun.pdf" },
-    { "question": "太陽から地球まで何分かかるの？", "target_pdf": "about_sun.pdf" }
+    { "id": "q001", "question": "月って何？", "target_pdf": "about_moon.pdf" },
+    { "id": "q002", "question": "月って、どうやってできたの？", "target_pdf": "about_moon.pdf" },
+    { "id": "q003", "question": "月と地球の関係は？", "target_pdf": "about_moon.pdf" },
+    { "id": "q004", "question": "なんか面白いこと教えて。", "target_pdf": null },
+    { "id": "q005", "question": "太陽はどうやって光ってるの？", "target_pdf": "about_sun.pdf" },
+    { "id": "q006", "question": "太陽はずっとこのまま？", "target_pdf": "about_sun.pdf" },
+    { "id": "q007", "question": "太陽の光は地球に届くまで何分？", "target_pdf": "about_sun.pdf" }
 ]

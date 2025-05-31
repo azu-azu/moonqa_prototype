@@ -9,9 +9,6 @@
 ---
 
 # 🎯 テストケース追加
-
----
-
 ## 🔍 理由
 
 | 項目                              | 理由                              |
@@ -175,3 +172,90 @@ Phase 3: 精度向上＆制御強化 → ✅ 完了
 ---
 
 
+# 📘 Phase 4 - Task 3: ログ出力の品質チェックと可視化の土台
+🗓️ 2025/05/31 \[Saturday] 20:50
+
+## ✅ 現状の構造（抜粋）
+
+```json
+{
+  "timestamp": "2025-05-31T11:25:34.273507",
+  "query": "太陽って何？",
+  "target_pdf": "about_sun.pdf",
+  "results": [ ... ]
+}
+```
+
+---
+
+## 🎯 Task Name：`query_id` の導入と設計反映
+
+### Cause Summary
+ログを後から分析・UI連携する際に、`query_id` がないと一致・追跡が難しくなるため。
+
+### Possible Causes
+* 現在は `query` が文字列としてそのまま保存されているだけで、一意識別ができない。
+* 質問文が重複する場合などに整合性が取れない。
+
+### Action Plan
+1. `questions.json` に `id` を追加する（形式：`q001`, `q002`, …）
+2. `test_qa_search.py` 側のループで `query_id` をログに含める
+3. ログ出力先（`qa_log.jsonl`）の構造に `query_id` を追記する
+4. JSONLの出力確認（pytest 通常実行でOK）
+
+### Structural Note
+* **命名規則**は固定長（例：`q003`）にしておくと、UIでの並び順や整合確認がしやすい。
+* 今回は `questions.json` 側を編集し、それを元に `test_qa_search.py` で使う。
+
+### 修正対象: tests/test_qa_search.py
+変更点まとめ：
+question_obj から id を取り出して query_id としてログに追加
+ログ出力する辞書に query_id キーを追加
+
+### 🎯 このテストの確認ポイント
+- `query_id` を含めた JSON ログが、正常に出力されるかを検証する
+- ログ出力ファイル：`logs/qa_log.jsonl`
+
+### テスト結果
+* `test_qa_search.py` がエラーなく **7件すべての質問に対して実行成功**
+* `--log-output` オプションを指定したため、**各質問のログが出力された**
+* `query_id` 対応のコードで実行されている（確認済）
+
+### まとめ：このテストで得られた信頼性
+* ログ出力が機能する
+* `query_id` が付与される
+* ログ構造が壊れていない
+* pytestオプション制御が有効
+
+
+## 🎯 Task Name：filter導入
+
+### 実行結果
+* **スコア 0.2022 / 0.2871 → 両方しきい値 0.2 超え ✅**
+* `source: about_sun.pdf (p.1)` → **ちゃんとフィルター効いてる！**
+* `content:` に「光が太陽から地球に届くまで約 8 分 19 秒」→ **どんぴしゃ回答あり！**
+
+---
+
+### 成功までのエラー原因
+* retriever に filter 渡してた → retriever.search_kwargs["filter"] = {"source": target_pdf}
+* 正しくは、dbにfilterかける → results = db.similarity_search_with_score(query, k=3, filter=...)
+
+* `metadata["source"]` に対して filter してたのが間違いだった
+* → `metadata["pdf_name"]` に修正したら、狙い通りのPDFだけ検索できた
+
+---
+
+### 💡 ふりかえりメモ
+
+* 表示用とフィルタ用で `metadata` を分ける設計にする
+* `"表示 = source"` / `"フィルタ = pdf_name"` というルール
+* テスト失敗時は、「どんなメタデータで保存されたか」を確認するのが第一
+
+| 用途    | フィールド名     | 値の例                   |
+| ----- | ---------- | --------------------- |
+| フィルタ用 | `pdf_name` | `about_sun.pdf`       |
+| 表示用   | `source`   | `about_sun.pdf (p.1)` |
+
+
+---

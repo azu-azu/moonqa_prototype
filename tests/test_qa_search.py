@@ -14,15 +14,17 @@ def pytest_addoption(parser):
 def log_output_enabled(request):
     return request.config.getoption("--log-output")
 
-# ✅ ログ出力関数
-def append_log_entry(query, target_pdf, results):
+# ✅ ログ出力関数（query_id 含む）
+def append_log_entry(query_id, query, target_pdf, results):
     log_entry = {
         "timestamp": datetime.now().isoformat(),
-        "query": query,
+        "query_id": query_id,
+        "question": query,
         "target_pdf": target_pdf,
+        "result_count": len(results),
         "results": [
             {
-                "score": float(score),  # float32 → float 変換でJSON対応
+                "score": float(score), # float32 → float 変換でJSON対応
                 "content": doc.page_content,
                 "metadata": doc.metadata
             }
@@ -33,11 +35,13 @@ def append_log_entry(query, target_pdf, results):
     with open("logs/qa_log.jsonl", "a", encoding="utf-8") as f:
         f.write(json.dumps(log_entry, ensure_ascii=False) + "\n")
 
-# ✅ パラメータ化テスト（JSONの全質問）
-@pytest.mark.parametrize("query,target_pdf", [
-    (q["question"], q.get("target_pdf")) for q in json.load(open("data/questions.json", encoding="utf-8"))
+# ✅ 質問データ読み込み＆パラメータ化
+@pytest.mark.parametrize("query_id,query,target_pdf", [
+    (q["id"], q["question"], q.get("target_pdf")) for q in json.load(open("data/questions.json", encoding="utf-8"))
 ])
-def test_similarity_search_with_threshold(query, target_pdf, log_output_enabled):
+def test_similarity_search_with_threshold(query_id, query, target_pdf, log_output_enabled):
+    # db = “ベクトルストア” インスタンス
+    # ここで得られる db は、直接 .similarity_search_with_score() や .similarity_search() を実行できる検索オブジェクト
     db = FAISS.load_local(
         folder_path="index/faiss_index",
         embeddings=OpenAIEmbeddings(),
@@ -45,20 +49,26 @@ def test_similarity_search_with_threshold(query, target_pdf, log_output_enabled)
         allow_dangerous_deserialization=True
     )
 
-    retriever = db.as_retriever()
+    # ✅ filterを正しく渡す（retrieverは使わない）
+    search_kwargs = {"k": 3}
     if target_pdf:
-        retriever.search_kwargs["filter"] = {"source": target_pdf}
+        search_kwargs["filter"] = {"pdf_name": target_pdf}
 
-    # ✅ スコア付き検索（RetrievalQAは使わない）
-    results = db.similarity_search_with_score(query, k=3)
+    results = db.similarity_search_with_score(query, **search_kwargs)
 
-    # ✅ スコアしきい値
-    threshold = 0.3
+    # ✅ スコアしきい値確認ログ
+    threshold = 0.2
+    for doc, score in results:
+        print(f"[{query_id}] Score: {score:.4f} → {'✔︎' if score >= threshold else '×'}")
+        print(f"source: {doc.metadata.get('source')}")
+        print(f"content: {doc.page_content[:80]}")  # 長すぎるときは80文字で切って確認
+        print("-" * 50)
+
+    # ✅ スコアしきい値フィルタ
     filtered = [doc for doc, score in results if score >= threshold]
 
-    # ✅ テスト：しきい値以上が1件以上ヒットすること
-    assert len(filtered) > 0, f"No relevant documents for query: {query} (threshold={threshold})"
+    assert len(filtered) > 0, f"No relevant documents for query_id: {query_id} (threshold={threshold})"
 
-    # ✅ ログ出力はオプション付きのときだけ
+    # ✅ ログ出力
     if log_output_enabled:
-        append_log_entry(query, target_pdf, results)
+        append_log_entry(query_id, query, target_pdf, results)
