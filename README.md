@@ -26,7 +26,7 @@ moonbase_qa/
 ├── app/                       # Core logic
 │   ├── qa.py                  # Answer generation logic
 │   ├── config.py              # Path handling
-│   ├── ingest.py              # PDF to chunk → embed → FAISS
+│   ├── ingest.py              # CLI entry point｜PDF to chunk → embed → FAISS
 │   ├── settings.py            # Constants like model name and thresholds
 │   └── ...
 ├── data/                      # PDF input folder
@@ -47,11 +47,13 @@ moonbase_qa/
 │   ├── manual_embedding_check.py  # Embedding/chunk inspection
 │   ├── manual_qa_run_log.py       # Quick output test with log
 │   └── test_qa_search.py          # pytest-compatible test
-├── main.py                    # CLI entry point
+│
 ├── README.md
 ├── .gitignore
 └── pyproject.toml
 ```
+- `scripts/` directory contains both production and testing scripts.
+  See [scripts/README.md](scripts/README.md) for full details.
 
 ---
 

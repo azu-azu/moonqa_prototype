@@ -1,5 +1,8 @@
 # scripts/build_vectorstore.py
-# PDFからチャンクを作って、ベクトル化して、FAISSに保存する、「学習データのインデックスを作る専用スクリプト」
+
+# ✅ 本番用スクリプト
+# PDFからベクトルインデックスを構築して保存する
+# 新しいPDFを追加・削除・修正したときに毎回実行する
 
 import os
 import glob

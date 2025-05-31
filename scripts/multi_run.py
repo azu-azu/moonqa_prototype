@@ -1,5 +1,9 @@
-# JSONファイル（複数質問）を読み込んで、QAを実行する
-# 主目的：テスト精度の評価・回帰テスト
+# scripts/multi_run.py
+
+# ✅ テスト用スクリプト
+# `questions.json` に記載された複数の質問をバッチで処理し、
+# 回答と使用チャンク情報を Markdown / JSON に保存する
+# 精度検証や回帰テストに使用
 
 import json
 import os

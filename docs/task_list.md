@@ -3,13 +3,13 @@
 
 ### Task 1: `main.py` の役割を明確化する
 
-* [ ] 使用されていない場合は削除する
+* [☑️] 使用されていない場合は削除する
 * [ ] 使用する場合は何のためか `README` に記述を追加する
 
 ### Task 2: `scripts/` ディレクトリのスクリプト分類
 
-* [ ] `manual_run.py`、`multi_run.py` の目的をコメントで明確にする
-* [ ] 本番用とテスト用の区分を `README` または `scripts/README.md` に明記する
+* [☑️] `manual_run.py`、`multi_run.py` の目的をコメントで明確にする
+* [☑️] 本番用とテスト用の区分を `README` または `scripts/README.md` に明記する
 
 ### Task 3: `settings.py` の整理と意図の明文化
 
