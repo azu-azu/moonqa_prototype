@@ -7,7 +7,7 @@ moonbase_qa/
 │   └── ...
 │
 ├── scripts/
-│   ├── build_vectorstore.py
+│   ├── build_vectorstore.py       # ✅ 必須｜PDFを追加・削除・修正したら、毎回実行してインデックスを再構築する
 │   └── multi_run.py
 │
 ├── docs/

@@ -16,27 +16,36 @@ def manual_vector_check():
     qa = RetrievalQA.from_chain_type(
         llm=ChatOpenAI(),
         retriever=retriever,
-        return_source_documents=True  # 🔑 これ重要！
+        return_source_documents=True
     )
 
     # question = "このPDFは何について書かれていますか？"
     # question = "月って何？"
     # question = "月の特徴は？"
-    question = "月って、どうやってできたの？"
+    # question = "月って、どうやってできたの？"
     # question = "地球とはどんな関係にあるの？"
     # question = "なんか面白いこと教えて。"
-
+    question = "太陽はどうやって光ってるの？"
     result = qa.invoke({"query": question})
 
     print("💬 質問:", question)
-    print("💡 回答:", result["result"])
+    print("💡 回答:", result['result'])
     print("\n🔍 ソース付きチャンク確認:\n")
 
+    # ファイル名 + ページ番号が記録されていることを検証する
     for i, doc in enumerate(result["source_documents"]):
+        source = doc.metadata.get("source", "❌ 不明")
         print(f"--- Doc {i+1} ---")
-        print("📁 source:", doc.metadata.get("source", "❌ 不明"))
+        print(f"📁 source: {source}", end=" ")
+
+        # ✅ sourceがちゃんと (p.N) を含んでるか”を視認しやすくする
+        if "(p." in source:
+            print("✅ page info OK")
+        else:
+            print("⚠️ page info MISSING")
+
         print("📝 content preview:")
-        print(doc.page_content[:300])
+        print(doc.page_content.strip()[:300])
         print()
 
 if __name__ == "__main__":

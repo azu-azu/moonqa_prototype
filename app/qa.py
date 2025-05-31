@@ -58,7 +58,10 @@ def get_answer(question, vectorstore):
     }) | PROMPT_TEMPLATE | ChatOpenAI(model=OPENAI_MODEL, temperature=0)
 
     result = chain.invoke({})
-    return result.content, docs_and_scores
+    sources = ", ".join(sorted(set(doc.metadata.get("source", "?") for doc in docs)))
+    full_answer = result.content + "\n\n参照元：" + sources
+
+    return full_answer, docs_and_scores
 
 def append_json_log(question, answer, docs_and_scores):
     log_entry = {
@@ -85,5 +88,5 @@ def print_chunk_info_markdown(docs_and_scores):
         print(f"### Chunk {i+1}")
         print(f"- **Score**: {score:.4f}")
         print(f"- **Source**: {source}")
-        print(f"```\n{doc.page_content.strip()[:500]}\n```")  # 長すぎる本文は500文字まで
+        print(f"```\n{doc.page_content.strip()[:500]}\n```") # 長すぎる本文は500文字まで
         print()
