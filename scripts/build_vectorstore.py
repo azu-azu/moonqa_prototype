@@ -24,8 +24,11 @@ def load_all_pdfs(data_dir):
 
         file_name = os.path.basename(pdf_path)
         for i, page in enumerate(pages):
-            # ページ単位で source を設定（"about_moon.pdf (p.1)" など）
+            # 表示用 source（ファイル名＋ページ番号）
             page.metadata["source"] = f"{file_name} (p.{i+1})"
+
+            # フィルタ用 pdf_name（ファイル名のみ）
+            page.metadata["pdf_name"] = file_name
 
         all_docs.extend(pages)
 

@@ -2,38 +2,52 @@
 
 from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 from langchain_community.vectorstores import FAISS
-from langchain.chains import RetrievalQA
+from app.qa import get_answer, load_vectorstore, print_chunk_info_markdown
 
-def manual_vector_check():
-    db = FAISS.load_local(
-        folder_path="index/faiss_index",
-        embeddings=OpenAIEmbeddings(),
-        index_name="index",
-        allow_dangerous_deserialization=True
-    )
+# ✅ 共通の質問文を定数に
+# QUESTION = "このPDFは何について書かれていますか？"
+# QUESTION = "月って何？"
+# QUESTION = "月の特徴は？"
+# QUESTION = "月って、どうやってできたの？"
+# QUESTION = "地球とはどんな関係にあるの？"
+# QUESTION = "なんか面白いこと教えて。"
+QUESTION = "太陽はどうやって光ってるの？"
 
-    retriever = db.as_retriever()
-    qa = RetrievalQA.from_chain_type(
-        llm=ChatOpenAI(),
-        retriever=retriever,
-        return_source_documents=True
-    )
+def manual_vector_check_all():
+    """
+    全PDFを対象にした検索テスト
+    """
+    vectorstore = load_vectorstore()
 
-    # question = "このPDFは何について書かれていますか？"
-    # question = "月って何？"
-    # question = "月の特徴は？"
-    # question = "月って、どうやってできたの？"
-    # question = "地球とはどんな関係にあるの？"
-    # question = "なんか面白いこと教えて。"
-    question = "太陽はどうやって光ってるの？"
-    result = qa.invoke({"query": question})
+    answer, docs_and_scores = get_answer(QUESTION, vectorstore)
 
-    print("💬 質問:", question)
-    print("💡 回答:", result['result'])
-    print("\n🔍 ソース付きチャンク確認:\n")
+    print("💬 質問:", QUESTION)
+    print("📁 検索対象: すべてのPDF")
+    print("💡 回答:\n", answer)
+    print_chunk_info_markdown(docs_and_scores)
+
+def manual_vector_check_with_filter():
+    """
+    指定したPDFだけを対象にした検索テスト
+    """
+    vectorstore = load_vectorstore()
+    target_pdf = "about_sun.pdf"
+
+    answer, docs_and_scores = get_answer(QUESTION, vectorstore, target_pdf=target_pdf)
+
+    print("💬 質問:", QUESTION)
+    print("📁 検索対象:", target_pdf)
+    print("💡 回答:\n", answer)
+    print_chunk_info_markdown(docs_and_scores)
+
+def validate_source_format(docs_and_scores):
+    """
+    source に (p.N) が含まれているかどうかを機械的にチェック
+    """
+    print("\n✅ sourceフォーマット検証結果:")
 
     # ファイル名 + ページ番号が記録されていることを検証する
-    for i, doc in enumerate(result["source_documents"]):
+    for i, (doc, score) in enumerate(docs_and_scores):
         source = doc.metadata.get("source", "❌ 不明")
         print(f"--- Doc {i+1} ---")
         print(f"📁 source: {source}", end=" ")
@@ -49,4 +63,7 @@ def manual_vector_check():
         print()
 
 if __name__ == "__main__":
-    manual_vector_check()
+    # ✅ テストしたい方をコメントアウトで切り替える
+    # manual_vector_check_all()
+    manual_vector_check_with_filter()
+    # validate_source_format(...) ← docs_and_scores が必要な場合に手動で呼び出し可

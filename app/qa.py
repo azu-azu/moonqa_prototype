@@ -29,8 +29,20 @@ def load_vectorstore():
     embedding = OpenAIEmbeddings()
     return FAISS.load_local(get_index_path(), embedding, allow_dangerous_deserialization=True)
 
-def retrieve_relevant_docs(vectorstore, query):
-    docs_and_scores = vectorstore.similarity_search_with_score(query, k=5)
+def retrieve_relevant_docs(vectorstore, query, target_pdf=None):
+    """
+    類似チャンクを取得する。target_pdf が指定されていれば、そのPDFだけを対象にする。
+    """
+    search_kwargs = {"k": 5}
+    docs_and_scores = vectorstore.similarity_search_with_score(query, **search_kwargs)
+
+    # PDFファイル名が一致するチャンクだけに絞る（source に部分一致）
+    if target_pdf:
+        docs_and_scores = [
+            (doc, score) for doc, score in docs_and_scores
+            if target_pdf in doc.metadata.get("source", "")
+        ]
+
     # スコアが小さい（距離が近い）ものを残す
     filtered = [(doc, score) for doc, score in docs_and_scores if score <= SCORE_THRESHOLD]
     return filtered
@@ -38,14 +50,15 @@ def retrieve_relevant_docs(vectorstore, query):
 def format_docs(docs):
     return "\n\n".join(doc.page_content for doc in docs)
 
-def get_answer(question, vectorstore):
+def get_answer(question, vectorstore, target_pdf=None):
     """
     指定された質問に対して回答を返す軽量関数。
+    質問 → ドキュメント検索 → プロンプト → 回答生成
+    - target_pdf を指定すると、そのPDFのみを検索対象にする。
     - sourceやチャンク内容の確認は含まれません。
     - それらを確認したい場合は manual_vector_check.py を使用してください。
     """
-
-    docs_and_scores = retrieve_relevant_docs(vectorstore, question)
+    docs_and_scores = retrieve_relevant_docs(vectorstore, question, target_pdf)
     if not docs_and_scores:
         return "データの中に、今回の答えはなかったみたいやわ。ごめんやで🌙", []
 
