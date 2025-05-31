@@ -13,9 +13,16 @@ python scripts/build_vectorstore.py
 python tests/manual_vector_check.py
 ```
 
+
 ## pytest
 ```
 poetry run pytest
+```
+
+
+## ログ出力付きで実行する
+```
+poetry run pytest tests/test_qa_search.py --log-output
 ```
 
 ---
