@@ -10,7 +10,7 @@
 | **Phase 2: テスト整備**       | 自動テストの枠組みを構築、基本精度を担保              | ✅ 完了済み   |
 | **Phase 3: 精度＆制御強化**     | `target_pdf`やスコアしきい値で検索の精度と制御性を向上 | ✅ 完了済み   |
 | **Phase 4: ログと可視化**      | QA結果をログ出力し、後分析しやすくする              | ✅ 完了済み   |
-| **Phase 5: CI対応**        | GitHub Actionsなどで自動テスト運用を整備       | 🔄 着手中   |
+| **Phase 5: CI対応**        | GitHub Actionsなどで自動テスト運用を整備       | ✅ 完了済み   |
 | **Phase 6: UX連携／Agent化** | UIやBot化でユーザー体験向上／対話型エージェントへ進化     | 🧭 将来的段階 |
 
 ---
@@ -85,11 +85,11 @@
 
 ### Task 0: CI構成の設計（準備タスク）
 
-* [ ] `pytest` 実行対象は `test_qa_search.py` のみに限定
-* [ ] `manual_*.py` はCI対象から除外（出力ノイズ対策）
-* [ ] `.env.example` を用意（CIに必要な環境変数だけ定義）
-* [ ] `.github/workflows/ci.yml` を新規作成（poetry + pytest実行）
-* [ ] ログ出力先は `logs/qa_log.jsonl` に統一（`.gitignore`対象）
+* [☑️] `pytest` 実行対象は `test_log_entry_structure.py` のみに限定
+* [☑️] `manual_*.py` はCI対象から除外（出力ノイズ対策）
+* [☑️] `.env.example` を用意（CIに必要な環境変数だけ定義）
+* [☑️] `.github/workflows/ci.yml` を新規作成（poetry + pytest実行）
+* [☑️] ログ出力先は `logs/qa_log.jsonl` に統一（`.gitignore`対象）
 
 ---
 
