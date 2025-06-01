@@ -3,6 +3,7 @@ import pytest
 from datetime import datetime
 from langchain_community.vectorstores import FAISS
 from langchain_openai import OpenAIEmbeddings
+from tests.log_utils import validate_log_entry
 
 # ✅ ログ出力フラグを pytest オプションから取得
 # --log-output を付けたときだけ logs/qa_log.jsonl に追記される
@@ -72,3 +73,8 @@ def test_similarity_search_with_threshold(query_id, query, target_pdf, log_outpu
     # ✅ ログ出力
     if log_output_enabled:
         append_log_entry(query_id, query, target_pdf, results)
+
+def test_log_entry_structure():
+    """qa_log.jsonl の最後のエントリ構造が正しいかを検証"""
+    log_path = "logs/qa_log.jsonl"
+    validate_log_entry(log_path)
