@@ -28,6 +28,7 @@ moonbase_qa/
 │   └── multi_run.py               # 🔧 テスト用｜精度検証や回帰テストに使用
 │
 ├── tests/
+│   ├── log_utils.py               # 🔧 ログ関連のユーティリティ関数
 │   ├── manual_embedding_check.py  # 🔧 手動確認：chunkの分割数やベクトル次元などを確認
 │   ├── manual_qa_run_log.py       # 🔧 手動確認：回答を生成してログを残す簡易チェック用スクリプト。source確認なし
 │   ├── manual_vector_check.py     # 🔧 手動確認：実際にどのチャンクが使われたかを確認する詳細用スクリプト。
