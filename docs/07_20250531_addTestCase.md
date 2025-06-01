@@ -259,3 +259,43 @@ question_obj から id を取り出して query_id としてログに追加
 
 
 ---
+
+## 🎯 Task Name：（Phase 4/Task 3） `timestamp`実装
+🗓️ 2025/06/01 \[Sunday] 9:00
+
+### 1. `timestamp` の付与方法を決める
+→ 各 `query_id` ごとに `datetime.now()`
+
+### 2. ログ出力のdict構造を作成する
+```python
+log_entry = {
+    "query_id": query_id,
+    "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+    "score": score,
+    "source": f"{pdf_name} (p.{page_number})",
+    "content": chunk_content
+}
+```
+
+### 3. `save_log_entry()` を作成して `logs/qa_log.jsonl` に追記する
+（存在しないときはディレクトリ作成含む）
+
+### 4. `--log-output` または `log_output_enabled` に連動して保存有無を制御する
+
+
+### 方針
+
+* `tests/test_qa_search.py` に統合する
+* `argparse` で `--log-output` オプションを使ってるなら、`args.log_output` を受け取る
+* その上で `save_log_entry()` を条件分岐で呼ぶだけでOK
+
+---
+
+### テスト結果
+
+**Task 3：ログ出力の品質チェックと可視化の土台 → 完全完了**
+
+* ✅ JSONL形式に準拠
+* ✅ timestamp対応済（フォーマットも◎）
+* ✅ 本番コードとの責務分離も完了（`qa.py`に混在なし）
+* ✅ `manual_qa_run_log.py` での動作確認OK

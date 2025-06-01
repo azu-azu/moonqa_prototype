@@ -13,7 +13,6 @@ python scripts/build_vectorstore.py
 python tests/manual_vector_check.py
 ```
 
-
 ## pytest
 ```
 poetry run pytest
@@ -28,6 +27,12 @@ poetry run pytest tests/test_qa_search.py --log-output
 ## id:q007 だけを試したいとき
 ```
 pytest tests/test_qa_search.py --log-output -s -k q007
+```
+
+# 中身を見る
+## qa_log.jsol
+```
+tail -n 1 logs/qa_log.jsonl | jq .
 ```
 
 ---

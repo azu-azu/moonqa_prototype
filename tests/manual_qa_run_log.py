@@ -1,6 +1,7 @@
 # tests/manual_qa_run_log.py
 
-from app.qa import load_vectorstore, get_answer, append_json_log
+from app.qa import load_vectorstore, get_answer
+from tests.log_utils import append_json_log
 
 if __name__ == "__main__":
     vectorstore = load_vectorstore()
