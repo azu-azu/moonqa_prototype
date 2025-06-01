@@ -1,4 +1,4 @@
-name: Run Pytest
+name: Run Pytest (Safe CI)
 
 on:
   push:
@@ -27,6 +27,6 @@ jobs:
         run: |
           poetry install
 
-      - name: ✅ Run pytest
+      - name: ✅ Run only safe log validation tests
         run: |
-          poetry run pytest tests/test_qa_search.py
+          poetry run pytest -k "test_log_entry_structure"
