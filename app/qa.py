@@ -8,6 +8,7 @@ from app.config import get_index_path
 from app.settings import SCORE_THRESHOLD, OPENAI_MODEL
 from app.logger import build_log_entry, append_qa_log
 from app.filters import filter_docs_by_metadata  # ← 追加！
+from app.classifier import classify_intent  # ← 追加！
 
 MISSING_ANSWER = "データの中に、今回の答えはなかったみたいやわ。ごめんやで🌙"
 
@@ -52,6 +53,8 @@ def get_answer(question, vectorstore, target_pdf=None):
     指定された質問に対して回答を返す。
     - target_pdf を指定すると、該当するsourceを含むチャンクのみを対象にする。
     """
+    intent = classify_intent(question)  # ← intent を分類！
+
     # 類似チャンクを取得
     docs_and_scores = retrieve_relevant_docs(vectorstore, question)
 
@@ -64,14 +67,14 @@ def get_answer(question, vectorstore, target_pdf=None):
     # スコアしきい値でさらにフィルタリング
     docs_and_scores = [(doc, score) for doc, score in docs_and_scores if score <= SCORE_THRESHOLD]
 
+    # 回答が見つからなかった場合
     if not docs_and_scores:
-        # 回答が見つからなかった場合
         log_entry = build_log_entry(
             question=question,
             answer="",
             results=[],
             status="notfound",
-            intent=None
+            intent=intent  # ← intentをログに記録
         )
         append_qa_log(log_entry)
         return MISSING_ANSWER, []
@@ -96,7 +99,7 @@ def get_answer(question, vectorstore, target_pdf=None):
             "score": float(score) # float32 → float に変換
         } for doc, score in docs_and_scores],
         status="success",
-        intent=None
+        intent=intent  # ← 成功時も intent を記録
     )
     append_qa_log(log_entry)
 

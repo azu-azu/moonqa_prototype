@@ -117,8 +117,8 @@
 
 ### 🔸 Task 2: 複合フィルター条件への対応
 
-* [ ] `source`, `tag`, `date` などを同時にfilterできる構造へ
-* [ ] filterビルダーを共通関数に抽出（`filters.py` など）
+* [☑️] `source`, `tag`, `date` などを同時にfilterできる構造へ
+* [☑️] filterビルダーを共通関数に抽出（`filters.py` など）
 * [ ] テストケースで正確にヒットするか検証
 
 ### 🔸 Task 3: intent分類（PDF質問／雑談／命令）
