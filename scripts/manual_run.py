@@ -4,10 +4,11 @@
 # 単発の質問に対して、QAとチャンク出力を実行する簡易チェックツール
 # QAロジックの検証や、埋め込み結果の妥当性チェックに使用
 
-from app.qa import load_vectorstore, get_answer, print_chunk_info_markdown
+from app.qa import load_vectorstore, get_answer
+from tests.manual_vector_check import print_chunk_info_markdown
 
 # --- 質問をここに書く ---
-question = "このPDFは何について書かれていますか？"
+question = "月って、どうやってできたの？"
 
 # --- ベクトルストア読み込み ---
 vectorstore = load_vectorstore()

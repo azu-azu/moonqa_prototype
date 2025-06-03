@@ -4,6 +4,7 @@ moonbase_qa/
 │   ├── qa.py
 │   ├── config.py
 │   ├── ingest.py    # 🌙 CLI entry point｜PDF to chunk → embed → FAISS
+│   ├── logger.py
 │   ├── settings.py
 │   └── ...
 │
