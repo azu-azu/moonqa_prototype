@@ -123,6 +123,6 @@
 
 ### 🔸 Task 3: intent分類（PDF質問／雑談／命令）
 
-* [ ] rule-based分類で、質問をタイプ分類（Intent: `pdf_question`, `chitchat`, `command`）
-* [ ] `classifier.py`を新設し、単語出現などでラフに分類
-* [ ] ログにも分類結果を記録
+* [☑️] rule-based分類で、質問をタイプ分類（Intent: `pdf_question`, `chitchat`, `command`）
+* [☑️] `classifier.py`を新設し、単語出現などでラフに分類
+* [☑️] ログにも分類結果を記録
