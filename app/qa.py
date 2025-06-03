@@ -7,6 +7,7 @@ from langchain.prompts import ChatPromptTemplate
 from app.config import get_index_path
 from app.settings import SCORE_THRESHOLD, OPENAI_MODEL
 from app.logger import build_log_entry, append_qa_log
+from app.filters import filter_docs_by_metadata  # ← 追加！
 
 MISSING_ANSWER = "データの中に、今回の答えはなかったみたいやわ。ごめんやで🌙"
 
@@ -33,24 +34,12 @@ def load_vectorstore():
     embedding = OpenAIEmbeddings()
     return FAISS.load_local(get_index_path(), embedding, allow_dangerous_deserialization=True)
 
-def retrieve_relevant_docs(vectorstore, query, target_pdf=None):
+def retrieve_relevant_docs(vectorstore, query):
     """
-    質問に対して類似チャンクを取得する。
-
-    - target_pdf が指定されていれば、そのPDFだけを対象にする（source に部分一致）
-    - SCORE_THRESHOLD 以下のチャンクのみ返す（距離が近いもの）
+    質問に対して類似チャンクを取得する（フィルタ適用前）。
     """
     search_kwargs = {"k": 5}
-    docs_and_scores = vectorstore.similarity_search_with_score(query, **search_kwargs)
-
-    if target_pdf:
-        docs_and_scores = [
-            (doc, score) for doc, score in docs_and_scores
-            if target_pdf in doc.metadata.get("source", "")
-        ]
-
-    filtered = [(doc, score) for doc, score in docs_and_scores if score <= SCORE_THRESHOLD]
-    return filtered
+    return vectorstore.similarity_search_with_score(query, **search_kwargs)
 
 def format_docs(docs):
     """
@@ -61,13 +50,19 @@ def format_docs(docs):
 def get_answer(question, vectorstore, target_pdf=None):
     """
     指定された質問に対して回答を返す。
-    質問 → ドキュメント検索 → プロンプト → 回答生成
-
-    - target_pdf を指定すると、そのPDFのみを検索対象にする。
-    - sourceやチャンク内容の確認は含まれない。
-    - それらを確認したい場合は manual_vector_check.py を使用。
+    - target_pdf を指定すると、該当するsourceを含むチャンクのみを対象にする。
     """
-    docs_and_scores = retrieve_relevant_docs(vectorstore, question, target_pdf)
+    # 類似チャンクを取得
+    docs_and_scores = retrieve_relevant_docs(vectorstore, question)
+
+    # メタデータによるフィルターを適用
+    filter_dict = {}
+    if target_pdf:
+        filter_dict["source"] = target_pdf
+    docs_and_scores = filter_docs_by_metadata(docs_and_scores, filter_dict)
+
+    # スコアしきい値でさらにフィルタリング
+    docs_and_scores = [(doc, score) for doc, score in docs_and_scores if score <= SCORE_THRESHOLD]
 
     if not docs_and_scores:
         # 回答が見つからなかった場合
@@ -93,13 +88,12 @@ def get_answer(question, vectorstore, target_pdf=None):
     sources = ", ".join(sorted(set(doc.metadata.get("source", "?") for doc in docs)))
     full_answer = result.content + "\n\n参照元：" + sources
 
-    # 回答が見つかった場合（成功）
     log_entry = build_log_entry(
         question=question,
         answer=full_answer,
         results=[{
             "source": doc.metadata.get("source"),
-            "score": float(score)  # float32 → float に変換
+            "score": float(score) # float32 → float に変換
         } for doc, score in docs_and_scores],
         status="success",
         intent=None

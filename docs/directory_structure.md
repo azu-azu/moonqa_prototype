@@ -4,6 +4,7 @@ moonbase_qa/
 │   ├── qa.py
 │   ├── config.py
 │   ├── ingest.py    # 🌙 CLI entry point｜PDF to chunk → embed → FAISS
+│   ├── filters.py
 │   ├── logger.py
 │   ├── settings.py
 │   └── ...
@@ -27,6 +28,7 @@ moonbase_qa/
 │   ├── build_vectorstore.py       # ✅ 本番用｜PDFを追加・削除・修正したら、毎回実行してインデックスを再構築する
 │   ├── manual_run.py              # 🔧 テスト用｜QAロジックの検証や、埋め込み結果の妥当性チェックに使用
 │   └── multi_run.py               # 🔧 テスト用｜精度検証や回帰テストに使用
+│   └── README.md                  # scriptsの使用方法
 │
 ├── tests/
 │   ├── log_utils.py               # 🔧 ログ関連のユーティリティ関数

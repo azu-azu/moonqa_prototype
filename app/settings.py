@@ -10,3 +10,7 @@ OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-3.5-turbo")
 
 # 類似スコアの閾値（0.0〜1.0の範囲で調整可能）
 SCORE_THRESHOLD = 0.6
+
+# チャンク設定
+CHUNK_SIZE = 300
+CHUNK_OVERLAP = 30

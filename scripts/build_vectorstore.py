@@ -10,6 +10,7 @@ from langchain_community.document_loaders import PyPDFLoader
 from langchain_community.vectorstores import FAISS
 from langchain_openai import OpenAIEmbeddings
 from langchain.text_splitter import RecursiveCharacterTextSplitter
+from app.settings import CHUNK_SIZE, CHUNK_OVERLAP
 
 # データとインデックスの保存先
 DATA_DIR = "data"
@@ -39,7 +40,7 @@ def load_all_pdfs(data_dir):
 
 def build_vectorstore(docs):
     # チャンク設定は用途に応じて調整可能
-    text_splitter = RecursiveCharacterTextSplitter(chunk_size=300, chunk_overlap=30)
+    text_splitter = RecursiveCharacterTextSplitter(chunk_size=CHUNK_SIZE, chunk_overlap=CHUNK_OVERLAP)
     split_docs = text_splitter.split_documents(docs)
 
     embeddings = OpenAIEmbeddings()
