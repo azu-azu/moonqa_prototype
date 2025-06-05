@@ -1,4 +1,4 @@
-# MoonQA Prototype 🌙
+# qa_pdf Prototype 🌙
 
 This is a prototype QA system built with LangChain, designed to answer questions from a PDF document about the moon.
 It uses vector search (FAISS) and OpenAI's language model to provide accurate, context-based answers.
@@ -22,7 +22,7 @@ It uses vector search (FAISS) and OpenAI's language model to provide accurate, c
 ## 🗂 Directory Structure
 
 ```
-moonbase_qa/
+qa_pdf/
 ├── app/                       # Core logic
 │   ├── qa.py                  # Answer generation logic
 │   ├── config.py              # Path handling

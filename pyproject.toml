@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "moonbase-qa"
+name = "qa_pdf"
 version = "0.1.0"
 description = "A small RAG-based QA bot using LangChain and FAISS"
 authors = ["azu"]

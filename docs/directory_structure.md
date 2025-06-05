@@ -1,5 +1,4 @@
-```
-moonbase_qa/
+qa_pdf/
 ├── app/ # アプリケーションのメインコード
 │   ├── qa.py
 │   ├── config.py
